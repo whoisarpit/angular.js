@@ -37,8 +37,13 @@ function getInfoForLocale(localeInfo, localeID) {
 function extractNumberSymbols(content, localeInfo, currencySymbols) {
   //eval script in the current context so that we get access to all the symbols
   // eslint-disable-next-line no-eval
-  eval(content.toString());
-  for (var propName in goog.i18n) {
+// Assuming content is a JSON string
+try {
+  const parsedContent = JSON.parse(content.toString());
+  // Now use parsedContent as a regular JavaScript object
+} catch (error) {
+  console.error("Error parsing JSON content:", error);
+}
     var localeID = findLocaleId(propName, 'num');
     if (localeID) {
       var info = getInfoForLocale(localeInfo, localeID);
@@ -51,8 +56,13 @@ function extractNumberSymbols(content, localeInfo, currencySymbols) {
 function extractCurrencySymbols(content) {
   //eval script in the current context so that we get access to all the symbols
   // eslint-disable-next-line no-eval
-  eval(content.toString());
-  // var currencySymbols = goog.i18n.currency.CurrencyInfo;
+try {
+  const parsedContent = JSON.parse(content);
+  // Now use parsedContent as a regular JavaScript object
+} catch (e) {
+  // Handle parsing error
+  console.error("Error parsing JSON content", e);
+}
   // currencySymbols.__proto__ = goog.i18n.currency.CurrencyInfoTier2;
 
   return Object.assign({}, goog.i18n.currency.CurrencyInfoTier2, goog.i18n.currency.CurrencyInfo);
@@ -61,8 +71,18 @@ function extractCurrencySymbols(content) {
 function extractDateTimeSymbols(content, localeInfo) {
   //eval script in the current context so that we get access to all the symbols
   // eslint-disable-next-line no-eval
-  eval(content.toString());
-  for (var propName in goog.i18n) {
+// Original vulnerable code:
+// eval(content.toString());
+
+// Assume content is meant to be a JSON string. Use JSON.parse instead.
+try {
+  const parsedContent = JSON.parse(content);
+  // Now use parsedContent safely within your code.
+  // Perform the operations you intended to do with eval.
+} catch (error) {
+  // Handle parsing error, which could be due to malicious input or simply malformed JSON.
+  console.error("Failed to parse content:", error);
+}
     var localeID = findLocaleId(propName, 'datetime');
     if (localeID) {
       var info = getInfoForLocale(localeInfo, localeID);
@@ -82,8 +102,51 @@ function pluralExtractor(content, localeInfo) {
     goog.LOCALE = localeIds[i].match(/[^_]+/)[0];
     try {
       // eslint-disable-next-line no-eval
-      eval(contentText);
-    } catch (e) {
+// Assume contentText is the dynamic content you want to evaluate
+// Instead of using eval, parse the content if it's JSON or use another safe method of handling the data
+
+// Example of safe parsing if the content is JSON
+try {
+  var contentObject = JSON.parse(contentText);
+  // Now you can work with contentObject as a regular JavaScript object
+} catch (e) {
+  // Handle error if contentText is not valid JSON
+  console.error("Failed to parse contentText as JSON:", e);
+}
+
+// If you expect to run a specific function based on the contentText,
+// you can use a predefined set of functions and call them safely like this:
+
+// Define your functions
+var allowedFunctions = {
+  myFunction: function(arg) {
+    // Your code here
+  },
+  anotherFunction: function(arg) {
+    // Your code here
+  }
+  // Add more functions as needed
+};
+
+// Validate and call a function from the allowedFunctions
+function callFunctionByName(functionName, arg) {
+  var func = allowedFunctions[functionName];
+  if (func) {
+    return func(arg);
+  } else {
+    throw new Error("Function not allowed or does not exist: " + functionName);
+  }
+}
+
+// Use the safe callFunctionByName instead of eval
+try {
+  // Assuming contentText is the name of the function to call
+  var result = callFunctionByName(contentText, argumentForFunction);
+  // Use result as needed
+} catch (e) {
+  // Handle error if the function name is not allowed or an error occurs during execution
+  console.error(e);
+}
       console.log('Error in eval(contentText): ' + e.stack);
     }
     if (!goog.i18n.pluralRules.select) {

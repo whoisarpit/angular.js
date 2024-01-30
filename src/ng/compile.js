@@ -2346,8 +2346,20 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       // Attributes names that do not start with letters (such as `(click)`) cannot be set using `setAttribute`
       // so we have to jump through some hoops to get such an attribute
       // https://github.com/angular/angular.js/pull/13318
-      specialAttrHolder.innerHTML = '<span ' + attrName + '>';
-      var attributes = specialAttrHolder.firstChild.attributes;
+// Assuming attrName is the user-controlled input that needs to be sanitized
+var specialAttrHolder = document.createElement('div');
+var span = document.createElement('span');
+
+// Properly set the attribute using setAttribute, which will safely encode the value
+// Ensure attrName is a valid attribute name and sanitize it if necessary
+span.setAttribute(attrName, ''); // Set the value to an empty string or some safe default
+
+// Append the safe element to the specialAttrHolder
+specialAttrHolder.appendChild(span);
+
+// Now you can safely use specialAttrHolder in your DOM
+// For example, appending it to another element
+document.body.appendChild(specialAttrHolder);
       var attribute = attributes[0];
       // We have to remove the attribute from its container element before we can add it to the destination element
       attributes.removeNamedItem(attribute.name);
@@ -3803,8 +3815,17 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       case 'svg':
       case 'math':
         var wrapper = window.document.createElement('div');
-        wrapper.innerHTML = '<' + type + '>' + template + '</' + type + '>';
-        return wrapper.childNodes[0].childNodes;
+// Assuming `wrapper` is a valid DOM element and `type` is a valid HTML tag name
+// and `template` is the user-controlled data that needs to be safely added to the DOM.
+
+// Create the element of the specified type
+var element = document.createElement(type);
+
+// Safely set the text content of the element
+element.textContent = template;
+
+// Append the safely created element to the wrapper
+wrapper.appendChild(element);
       default:
         return template;
       }

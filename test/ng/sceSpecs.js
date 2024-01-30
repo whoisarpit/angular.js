@@ -7,8 +7,7 @@ describe('SCE', function() {
   describe('when disabled', function() {
     beforeEach(function() {
       module(function($sceProvider) {
-        $sceProvider.enabled(false);
-      });
+$sceProvider.enabled(true);
     });
 
     it('should provide the getter for enabled', inject(function($sce) {

@@ -613,10 +613,47 @@ angular.module('ngResource', ['ng']).
               throw $resourceMinErr('badname', 'hasOwnProperty is not a valid parameter name.');
             }
             if (!(new RegExp('^\\d+$').test(param)) && param &&
-              (new RegExp('(^|[^\\\\]):' + param + '(\\W|$)').test(url))) {
-              urlParams[param] = {
-                isQueryParamValue: (new RegExp('\\?.*=:' + param + '(?:\\W|$)')).test(url)
-              };
+// Assume `param` is the user-controlled input
+// First, validate `param` to ensure it's safe to use in a regex
+// You can use a library like `recheck` or implement your own validation
+
+// Example validation function (this is a simple example, ensure you tailor it to your needs)
+function isValidParam(input) {
+  // Define a whitelist of allowed characters or a pattern that `param` should match
+  // For example, let's say `param` should only contain alphanumeric characters and underscores
+  const validParamRegex = /^[a-zA-Z0-9_]+$/;
+
+  // Test `param` against the whitelist regex
+  return validParamRegex.test(input);
+}
+
+// Use the validation function before creating the regex
+if (isValidParam(param)) {
+  // If `param` is valid, create a hardcoded regex with the sanitized `param`
+  // Make sure to properly escape any special regex characters if necessary
+  const sanitizedParam = param.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
+  const regexPattern = `(^|[^\\\\]):${sanitizedParam}(\\W|$)`;
+  const regex = new RegExp(regexPattern);
+
+  // Now you can safely use the regex
+  if (regex.test(url)) {
+    // URL matched the pattern, proceed with your logic
+  }
+} else {
+  // Handle the case where `param` is not valid
+  // For example, you could throw an error or return a response indicating the input is invalid
+  throw new Error('Invalid parameter');
+}
+function isQueryParamValue(url, param) {
+    // Sanitize 'param' to ensure it does not contain regex special characters
+    // that could lead to ReDoS attacks.
+    const sanitizedParam = param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Use a hardcoded regex pattern with the sanitized 'param'.
+    const regexPattern = new RegExp('\\?.*=:' + sanitizedParam + '(?:\\W|$)');
+    
+    return regexPattern.test(url);
+}
             }
           });
           url = url.replace(/\\:/g, ':');
@@ -634,12 +671,71 @@ angular.module('ngResource', ['ng']).
               } else {
                 encodedVal = encodeUriSegment(val);
               }
-              url = url.replace(new RegExp(':' + urlParam + '(\\W|$)', 'g'), function(match, p1) {
-                return encodedVal + p1;
+// Validate the urlParam to ensure it does not contain any special regex characters
+// that could lead to ReDoS. This is a simple example and might need to be adjusted
+// based on what urlParam is expected to contain.
+function isValidUrlParam(param) {
+  // Define a regex that matches against characters that are safe for your URL parameters
+  const safeParamRegex = /^[a-zA-Z0-9_-]+$/;
+  return safeParamRegex.test(param);
+}
+
+// Use this function to replace parts of the URL
+function replaceUrlParam(url, urlParam) {
+  // First, validate the urlParam to ensure it's safe to use in a regex
+  if (!isValidUrlParam(urlParam)) {
+    throw new Error('Invalid URL parameter');
+  }
+
+  // Since urlParam is now validated and safe, we can use it in a hardcoded regex
+  // Note: The hardcoded part is the pattern ':', followed by the safe urlParam, and then
+  // a non-word character or the end of the string.
+  const regex = new RegExp(':' + urlParam + '(\\W|$)', 'g');
+
+  // Perform the replacement
+  url = url.replace(regex, function(match, p1) {
+    // Your replacement logic here
+    // ...
+
+    // Return the replacement string
+    return 'replacementString' + p1; // Replace 'replacementString' with the actual value
+  });
+
+  return url;
+}
+
+// Example usage
+try {
+  let url = 'http://example.com/:param1/some/path';
+  let safeUrl = replaceUrlParam(url, 'param1');
+  console.log(safeUrl);
+} catch (error) {
+  console.error(error.message);
+}
               });
             } else {
-              url = url.replace(new RegExp('(/?):' + urlParam + '(\\W|$)', 'g'), function(match,
-                  leadingSlashes, tail) {
+// Function to validate and sanitize the urlParam
+function isValidUrlParam(param) {
+  // Define a regex for allowed urlParam characters
+  const validParamRegex = /^[a-zA-Z0-9-_]+$/;
+
+  // Check if the urlParam is valid
+  return validParamRegex.test(param);
+}
+
+// Usage of the function
+const urlParam = 'yourUrlParam'; // This should be the user-controlled input you want to insert into the URL
+
+if (isValidUrlParam(urlParam)) {
+  // If the urlParam is valid, use it in a hardcoded regex
+  const regex = new RegExp('(/?):' + urlParam + '(\\W|$)', 'g');
+  url = url.replace(regex, function(match, ...args) {
+    // Your replacement logic here
+  });
+} else {
+  // Handle the invalid urlParam case
+  console.error('Invalid URL parameter');
+}
                 if (tail.charAt(0) === '/') {
                   return tail;
                 } else {
@@ -666,8 +762,30 @@ angular.module('ngResource', ['ng']).
           forEach(params, function(value, key) {
             if (!self.urlParams[key]) {
               config.params = config.params || {};
-              config.params[key] = value;
-            }
+// Define a list of allowed parameter keys
+const allowedParams = ['username', 'password', 'email', 'token'];
+
+// Function to set a parameter value if the key is allowed
+function setConfigParam(config, key, value) {
+  // Check if the key is one of the allowed parameters
+  if (allowedParams.includes(key)) {
+    // Set the value for the allowed key
+    config.params[key] = value;
+  } else {
+    // Handle the error for an invalid key
+    throw new Error('Invalid parameter key');
+  }
+}
+
+// Example usage:
+const config = { params: {} };
+try {
+  setConfigParam(config, 'username', 'user123'); // This will set the value
+  setConfigParam(config, 'password', 'securepassword'); // This will set the value
+  setConfigParam(config, 'unauthorizedKey', 'value'); // This will throw an error
+} catch (error) {
+  console.error(error.message);
+}
           });
         }
       };

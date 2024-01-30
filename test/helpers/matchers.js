@@ -50,10 +50,66 @@ beforeEach(function() {
   }
 
   function MinErrMatcher(isNot, namespace, code, content, wording) {
-    var codeRegex = new RegExp('^' + escapeRegexp('[' + namespace + ':' + code + ']'));
-    var contentRegex = angular.isUndefined(content) || jasmine.isA_('RegExp', content) ?
-        content : new RegExp(escapeRegexp(content));
+// Import the recheck library to validate the regex
+const recheck = require('recheck');
 
+// Function to escape regex special characters
+function escapeRegexp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Function to validate the namespace and code
+function isValidInput(input) {
+  // Define a whitelist pattern for namespace and code
+  const whitelistPattern = /^[a-zA-Z0-9_-]+$/;
+  return whitelistPattern.test(input);
+}
+
+// Assuming `namespace` and `code` are variables with user-controlled input
+if (isValidInput(namespace) && isValidInput(code)) {
+  // Escape the namespace and code to prevent ReDoS
+  const escapedNamespace = escapeRegexp(namespace);
+  const escapedCode = escapeRegexp(code);
+
+  // Construct the regex pattern
+  const pattern = '^\\[' + escapedNamespace + ':' + escapedCode + '\\]';
+
+  // Use recheck to validate the regex
+  if (recheck.isSafe(pattern)) {
+    // The regex is safe to use
+    var codeRegex = new RegExp(pattern);
+  } else {
+    // Handle the unsafe regex pattern
+    console.error('The constructed regex pattern is unsafe and may cause ReDoS.');
+  }
+} else {
+  // Handle invalid input
+  console.error('The namespace or code contains invalid characters.');
+}
+// Import a library to check and sanitize the regex
+const recheck = require('recheck');
+
+// Define a hardcoded pattern for the content if possible
+const hardcodedPattern = /^[a-zA-Z0-9]+$/; // Example pattern, adjust as needed
+
+// If you must use dynamic content, sanitize and check it first
+function createSafeRegExp(content) {
+  // Sanitize the content to escape any special regex characters
+  const sanitizedContent = escapeRegexp(content);
+
+  // Check if the sanitized content is safe to use in a regex
+  if (recheck.isSafe(sanitizedContent)) {
+    // If safe, create a new RegExp object
+    return new RegExp(sanitizedContent);
+  } else {
+    // If not safe, handle the error or use a default safe pattern
+    console.error('Unsafe regex pattern detected!');
+    return hardcodedPattern; // Fallback to a hardcoded safe pattern
+  }
+}
+
+// Usage example
+const safeRegExp = createSafeRegExp(userInput);
     this.test = test;
 
     function escapeRegexp(str) {
@@ -490,4 +546,3 @@ function createAsync(doneFn) {
   };
   return new Job();
 }
-

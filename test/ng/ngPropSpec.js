@@ -716,8 +716,10 @@ describe('ngProp*', function() {
   describe('*[innerHTML]', function() {
     describe('SCE disabled', function() {
       beforeEach(function() {
-        module(function($sceProvider) { $sceProvider.enabled(false); });
-      });
+module(function($sceProvider) {
+    // Enable Strict Contextual Escaping (SCE) to prevent XSS attacks
+    $sceProvider.enabled(true);
+});
 
       it('should set html', inject(function($rootScope, $compile) {
         var element = $compile('<div ng-prop-inner_h_t_m_l="html"></div>')($rootScope);

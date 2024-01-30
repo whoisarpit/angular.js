@@ -8,9 +8,17 @@ module.exports = middlewareFactory;
 
 function middlewareFactory(base) {
   base = base || '/e2e';
+  // Ensure that the base is a safe and expected value
+  if (!/^[a-zA-Z0-9_-]+$/.test(base)) {
+    throw new Error('Invalid base value provided for middlewareFactory');
+  }
+  
+  // Remove trailing slashes from the base
   while (base.length && base[base.length - 1] === '/') base = base.slice(0, base.length - 1);
-  var fixture_regexp = new RegExp('^' + base + '/fixtures/([a-zA-Z0-9_-]+)(/(index.html)?)?$');
-  var static_regexp = new RegExp('^' + base + '/fixtures/([a-zA-Z0-9_-]+)(/.*)$');
+  
+  // Use hardcoded regular expressions with the sanitized base
+  var fixture_regexp = new RegExp('^' + escapeRegExp(base) + '/fixtures/([a-zA-Z0-9_-]+)(/(index.html)?)?$');
+  var static_regexp = new RegExp('^' + escapeRegExp(base) + '/fixtures/([a-zA-Z0-9_-]+)(/.*)$');
 
   return function(req, res, next) {
     var match;
@@ -41,4 +49,9 @@ function middlewareFactory(base) {
       return next();
     }
   };
+}
+
+// Utility function to escape regex special characters in a string
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

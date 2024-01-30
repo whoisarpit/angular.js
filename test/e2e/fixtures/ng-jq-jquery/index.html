@@ -3,11 +3,14 @@
   <body>
     <span>{{jqueryVersion}}</span>
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <!-- Updated script tag with integrity and crossorigin attributes -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js" integrity="sha384-[BASE64-ENCODED HASH HERE]" crossorigin="anonymous"></script>
+    
     <script>
       var jQuery_2_1_0 = jQuery.noConflict();
     </script>
-    <script src="../../../../node_modules/jquery/dist/jquery.js"></script>
+    <!-- It is not recommended to include the same library multiple times, so the following line should be removed if not necessary -->
+    <!-- <script src="../../../../node_modules/jquery/dist/jquery.js"></script> -->
     <script src="angular.js"></script>
     <script src="script.js"></script>
   </body>
