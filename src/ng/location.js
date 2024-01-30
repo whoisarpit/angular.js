@@ -949,8 +949,30 @@ function $LocationProvider() {
 
       if (!startsWith(newUrl, appBaseNoFile)) {
         // If we are navigating outside of the app then force a reload
-        $window.location.href = newUrl;
-        return;
+// Assume newUrl is the URL we get from user input
+var newUrl = getUserInput();
+
+// Function to validate the URL
+function isValidUrl(url) {
+    // Create a pattern for a valid URL structure
+    var pattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+    return pattern.test(url);
+}
+
+// Function to sanitize the URL
+function sanitizeUrl(url) {
+    // You can use a library like DOMPurify or implement your own sanitization logic
+    return DOMPurify.sanitize(url);
+}
+
+// Validate and sanitize the URL before redirecting
+if (isValidUrl(newUrl)) {
+    var sanitizedUrl = sanitizeUrl(newUrl);
+    $window.location.href = sanitizedUrl;
+} else {
+    console.error('Invalid URL: Redirection aborted.');
+    // Handle the invalid URL appropriately, e.g., show an error message to the user
+}
       }
 
       $rootScope.$evalAsync(function() {

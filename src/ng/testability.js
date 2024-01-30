@@ -34,8 +34,29 @@ function $$TestabilityProvider() {
         if (dataBinding) {
           forEach(dataBinding, function(bindingName) {
             if (opt_exactMatch) {
-              var matcher = new RegExp('(^|\\s)' + escapeForRegexp(expression) + '(\\s|\\||$)');
-              if (matcher.test(bindingName)) {
+// Import a library to sanitize the regex if needed
+// const recheck = require('recheck');
+
+// Define a hardcoded regex pattern or a safe way to create one from user input
+// For example, if `expression` must be a specific set of characters, define a whitelist and validate against it
+// const WHITELIST = /^[a-zA-Z0-9]+$/;
+
+// Validate the `expression` before using it in the regex
+// if (!WHITELIST.test(expression)) {
+//   throw new Error('Invalid expression');
+// }
+
+// If using a library like recheck, ensure the expression is safe
+// if (!recheck.isSafe(expression)) {
+//   throw new Error('Unsafe regular expression');
+// }
+
+// Use the validated or sanitized expression in the regex
+// Assuming `expression` is now safe to use
+var safeExpression = escapeForRegexp(expression); // Make sure escapeForRegexp properly escapes special regex characters
+var matcher = new RegExp('(^|\\s)' + safeExpression + '(\\s|\\||$)');
+
+// Continue with the rest of your code
                 matches.push(binding);
               }
             } else {

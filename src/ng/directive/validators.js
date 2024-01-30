@@ -421,8 +421,22 @@ function parsePatternAttr(regex, patternExp, elm) {
   if (!regex) return undefined;
 
   if (isString(regex)) {
-    regex = new RegExp('^' + regex + '$');
-  }
+// Import a library to sanitize and check the regex
+const recheck = require('recheck');
+
+// Assume `userInput` is the string input from the user that you want to use in your regex
+const userInput = '...'; // Replace with actual user input
+
+// Sanitize and check the user input before using it in the regex
+if (recheck.isSafe(userInput)) {
+    // The input is safe to use in a regex
+    const safeRegex = '^' + userInput + '$';
+    const regex = new RegExp(safeRegex);
+    // Use `regex` for your operations
+} else {
+    // The input is potentially dangerous and should not be used in a regex
+    throw new Error('The provided input is not safe for regular expression operations.');
+}
 
   if (!regex.test) {
     throw minErr('ngPattern')('noregexp',

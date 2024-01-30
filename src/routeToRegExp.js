@@ -17,6 +17,13 @@
 function routeToRegExp(path, opts) {
   var keys = [];
 
+  // Validate the path to ensure it does not contain any dangerous patterns
+  // that could lead to ReDoS. This is a basic example and should be adjusted
+  // according to the specific requirements and threat model of your application.
+  if (!/^[a-zA-Z0-9\/\:\-\_\*\?]+$/.test(path)) {
+    throw new Error('Invalid path provided. Path contains unsafe characters.');
+  }
+
   var pattern = path
     .replace(/([().])/g, '\\$1')
     .replace(/(\/)?:(\w+)(\*\?|[?*])?/g, function(_, slash, key, option) {
@@ -35,6 +42,10 @@ function routeToRegExp(path, opts) {
   if (opts.ignoreTrailingSlashes) {
     pattern = pattern.replace(/\/+$/, '') + '/*';
   }
+
+  // Use a hardcoded regular expression pattern if possible
+  // Example hardcoded pattern (adjust as necessary):
+  // var hardcodedPattern = 'your-hardcoded-pattern-here';
 
   return {
     keys: keys,

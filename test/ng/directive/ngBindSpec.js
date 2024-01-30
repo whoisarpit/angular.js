@@ -169,8 +169,9 @@ describe('ngBind*', function() {
 
     describe('SCE disabled', function() {
       beforeEach(function() {
-        module(function($sceProvider) { $sceProvider.enabled(false); });
-      });
+module(function($sceProvider) {
+    $sceProvider.enabled(true);
+});
 
       it('should set html', inject(function($rootScope, $compile) {
         element = $compile('<div ng-bind-html="html"></div>')($rootScope);

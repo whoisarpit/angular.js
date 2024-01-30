@@ -496,8 +496,49 @@ describe('injector', function() {
           'class /* Test */ {}'
         ], function(classDefinition) {
           // eslint-disable-next-line no-eval
-          var Clazz = eval('(' + classDefinition + ')');
-          var instance = injector.invoke(Clazz);
+// Assume classDefinition is a string containing a JSON representation of the class properties and methods.
+// First, parse the JSON string into an object.
+var classDefinitionObject;
+try {
+    classDefinitionObject = JSON.parse(classDefinition);
+} catch (e) {
+    // Handle parsing error, perhaps by logging or throwing an error
+    console.error("Error parsing class definition:", e);
+    throw new Error("Invalid class definition");
+}
+
+// Define a function to create a class from the definition object
+function createClass(definition) {
+    // Create a new class dynamically
+    return class {
+        constructor() {
+            // Assign properties from the definition to the instance
+            Object.assign(this, definition.properties);
+        }
+
+        // Add methods to the class prototype
+        static addMethods(targetClass, methods) {
+            for (const methodName in methods) {
+                if (methods.hasOwnProperty(methodName)) {
+                    targetClass.prototype[methodName] = methods[methodName];
+                }
+            }
+        }
+    };
+}
+
+// Use the createClass function to create a new class from the definition object
+var Clazz;
+if (classDefinitionObject) {
+    Clazz = createClass(classDefinitionObject);
+    // If there are methods defined, add them to the class prototype
+    if (classDefinitionObject.methods) {
+        Clazz.addMethods(Clazz, classDefinitionObject.methods);
+    }
+}
+
+// Now you can use Clazz to create instances
+// var instance = new Clazz();
 
           expect(instance).toEqual(jasmine.any(Clazz));
         });

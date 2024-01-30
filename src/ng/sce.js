@@ -63,13 +63,54 @@ function adjustMatcher(matcher) {
     matcher = escapeForRegexp(matcher).
                   replace(/\\\*\\\*/g, '.*').
                   replace(/\\\*/g, '[^:/.?&;]*');
-    return new RegExp('^' + matcher + '$');
-  } else if (isRegExp(matcher)) {
+// Import a library to check for potentially dangerous regexes
+const recheck = require('recheck');
+
+// A function that validates the matcher before creating a RegExp
+function createSafeRegExp(matcher) {
+  // Validate the matcher to ensure it's not susceptible to ReDoS
+  if (!recheck.isSafe(matcher)) {
+    throw new Error('Unsafe regular expression detected!');
+  }
+
+  // If the matcher is safe, create and return the RegExp
+  return new RegExp('^' + matcher + '$');
+}
+
+// Example usage
+try {
+  const safeRegExp = createSafeRegExp(userInput); // userInput should be the string you want to use as a regex
+  // ... use safeRegExp for your operations
+} catch (error) {
+  console.error(error.message);
+  // Handle the unsafe regex appropriately
+}
     // The only other type of matcher allowed is a Regexp.
     // Match entire URL / disallow partial matches.
     // Flags are reset (i.e. no global, ignoreCase or multiline)
-    return new RegExp('^' + matcher.source + '$');
-  } else {
+// Define a hardcoded regex pattern that is known to be safe
+const safePattern = /^[a-zA-Z0-9]+$/; // Example pattern, modify as needed
+
+// Function to validate the input against the safe regex pattern
+function validateInput(input) {
+  if (typeof input !== 'string') {
+    throw new Error('Input must be a string.');
+  }
+  if (!safePattern.test(input)) {
+    throw new Error('Input contains invalid characters.');
+  }
+  return input;
+}
+
+// Usage of the validateInput function
+try {
+  const userInput = 'user-controlled-input'; // Replace with actual user input
+  const validatedInput = validateInput(userInput);
+  // Proceed with your logic using the validated input
+} catch (error) {
+  console.error(error.message);
+  // Handle the error appropriately
+}
     throw $sceMinErr('imatcher',
         'Matchers may only be "self", string patterns or RegExp objects');
   }

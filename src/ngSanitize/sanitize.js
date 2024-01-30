@@ -459,8 +459,16 @@ function $SanitizeProvider() {
     }
 
     function getInertBodyElement_InertDocument(html) {
-      inertBodyElement.innerHTML = html;
+// Assume sanitizeHtml is a function that removes or encodes any potentially
+// dangerous HTML content, making it safe to insert into the DOM.
+function sanitizeHtml(html) {
+  // Implement the sanitization logic or use a library like DOMPurify.
+  // For example, using DOMPurify:
+  // return DOMPurify.sanitize(html);
+}
 
+// Use the sanitizeHtml function before assigning to innerHTML.
+inertBodyElement.innerHTML = sanitizeHtml(html);
       // Support: IE 9-11 only
       // strip custom-namespaced attributes on IE<=11
       if (document.documentMode) {

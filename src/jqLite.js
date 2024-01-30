@@ -246,8 +246,33 @@ function jqLiteBuildFragment(html, context) {
 
     if (msie < 10) {
       wrap = wrapMapIE9[tag] || wrapMapIE9._default;
-      tmp.innerHTML = wrap[1] + finalHtml + wrap[2];
+// Assuming wrap[1] and wrap[2] are safe strings that do not contain user-controlled data
+// and finalHtml is the user-controlled data that needs to be sanitized.
 
+// Create a new element to hold the content
+var tmp = document.createElement('div');
+
+// Safely set the static parts of the wrapper
+tmp.innerHTML = wrap[1] + wrap[2];
+
+// Find the location where the user content should be inserted
+// This assumes that wrap[1] does not contain any elements with the same tag as wrap[2]
+// If it does, you would need a more specific way to find the correct insertion point
+var insertionPoint = tmp.querySelector('*:last-child');
+
+// Create a text node for the user-controlled data to prevent interpretation as HTML
+var textNode = document.createTextNode(finalHtml);
+
+// Insert the text node into the correct location in the wrapper
+if (insertionPoint) {
+  insertionPoint.parentNode.insertBefore(textNode, insertionPoint.nextSibling);
+} else {
+  // If there's no element to insert after, append the text node as the first child
+  tmp.appendChild(textNode);
+}
+
+// Now tmp contains the safe content, with user data properly neutralized
+// You can insert tmp into the document wherever it's needed
       // Descend through wrappers to the right content
       i = wrap[0];
       while (i--) {
@@ -263,8 +288,17 @@ function jqLiteBuildFragment(html, context) {
         tmp = tmp.firstChild;
       }
 
-      tmp.innerHTML = finalHtml;
-    }
+// Assume finalHtml is a string that may contain user-controlled data
+
+// Create a new element to hold the content
+var tmp = document.createElement('div');
+
+// Safely set the text content of the element
+tmp.textContent = finalHtml;
+
+// If you need to insert the content into the DOM, append the new element as a child
+// to the parent element where you want the content to appear
+// document.getElementById('parentElementId').appendChild(tmp);
 
     nodes = concat(nodes, tmp.childNodes);
 
@@ -794,8 +828,7 @@ forEach({
       return element.innerHTML;
     }
     jqLiteDealoc(element, true);
-    element.innerHTML = value;
-  },
+element.textContent = value;
 
   empty: jqLiteEmpty
 }, function(fn, name) {

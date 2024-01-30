@@ -391,8 +391,28 @@ forEach(ALIASED_ATTR, function(htmlAttr, ngAttr) {
         if (ngAttr === 'ngPattern' && attr.ngPattern.charAt(0) === '/') {
           var match = attr.ngPattern.match(REGEX_STRING_REGEXP);
           if (match) {
-            attr.$set('ngPattern', new RegExp(match[1], match[2]));
-            return;
+// Before using the user input to create a RegExp, validate or sanitize the input.
+// For example, you can use a library like 'recheck' to ensure the regex pattern is safe.
+
+// Import the 'recheck' library or similar regex validation library
+const recheck = require('recheck');
+
+// Assuming 'match[1]' contains the user-controlled regex pattern
+// and 'match[2]' contains the regex flags
+const pattern = match[1];
+const flags = match[2];
+
+// Validate the regex pattern using 'recheck' or similar
+if (recheck.isSafe(pattern)) {
+  // If the pattern is safe, use it to set the 'ngPattern'
+  attr.$set('ngPattern', new RegExp(pattern, flags));
+} else {
+  // If the pattern is not safe, handle the error appropriately
+  // For example, you could set a default safe pattern or throw an error
+  console.error('The provided regex pattern is unsafe and may cause ReDoS.');
+  // Set a default safe pattern or handle the error as needed
+  // attr.$set('ngPattern', new RegExp(safeDefaultPattern, flags));
+}
           }
         }
 
